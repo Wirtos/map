@@ -31,10 +31,10 @@ if (val) {
 }
 ```
 
-When you are done with a map the `map_deinit()` function should be called on
+When you are done with a map the `map_delete()` function should be called on
 it. This will free any memory the map allocated during use.
 ```c
-map_deinit(&m);
+map_delete(&m);
 ```
 
 
