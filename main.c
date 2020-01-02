@@ -29,7 +29,7 @@ char *itoa_dyn(size_t num) {
 }
 
 int main(void) {
-    map_t(size_t) map;
+    map_t(size_t) map; // define custom map with size_t value type
     map_init(&map);
     printf("MAP INIT\n");
     char *key = NULL;
