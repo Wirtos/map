@@ -22,6 +22,7 @@ map_set(&m, "testkey", 123);
 To retrieve a value from a map, the `map_get()` function can be used.
 `map_get()` will return a pointer to the key's value, or `NULL` if no mapping
 for that key exists.
+
 ```c
 int *val = map_get(&m, "testkey");
 if (val) {
@@ -36,7 +37,6 @@ it. This will free any memory the map allocated during use.
 ```c
 map_delete(&m);
 ```
-
 
 ## Types
 map.h provides the following predefined map types:
@@ -91,6 +91,7 @@ exist in the map then the function has no effect.
 Returns a `map_iter_t` which can be used with `map_next()` to iterate all the
 keys in the map.
 
+
 ### map\_next(m, iter)
 Uses the `map_iter_t` returned by `map_iter()` to iterate all the keys in the
 map. `map_next()` returns a key with each call and returns `NULL` when there
@@ -103,6 +104,21 @@ while ((key = map_next(&m, &iter))) {
   printf("%s -> %d", key, *map_get(&m, key));
 }
 ```
+
+## Known bugs(implementation disadvantages)
+`map_remove` on current node key will cause freed memory access bug when values are iterated
+```c
+const char *key;
+map_iter_t get_iter = map_iter(&m);
+
+while ((key = map_next(&m, &get_iter))) {
+    map_remove(&m, key);
+    size_t ret = *map_get(&m, key); // access violation error on bound check enabled debuggers(MSVC), freed memory is accessed
+    printf("key: \"%s\" got, value: %zu\n", key, ret);
+}
+```
+
+
 
 ## License
 This library is free software; you can redistribute it and/or modify it under
