@@ -8,7 +8,7 @@
 #ifndef MAP_H
 #define MAP_H
 
-#include <string.h> // memset
+#include <string.h> /* memset*/
 
 #define MAP_VERSION "0.1.1"
 
@@ -16,13 +16,13 @@ struct map_node_t;
 typedef struct map_node_t map_node_t;
 
 typedef struct {
-  map_node_t **buckets;
-  size_t nbuckets, nnodes;
+    map_node_t **buckets;
+    size_t nbuckets, nnodes;
 } map_base_t;
 
 typedef struct {
-  unsigned bucketidx;
-  map_node_t *node;
+    size_t bucketidx;
+    map_node_t *node;
 } map_iter_t;
 
 
@@ -60,11 +60,15 @@ typedef struct {
 
 
 void map_delete_(map_base_t *);
+
 void *map_get_(map_base_t *, const char *);
 
-short map_set_(map_base_t *, const char *, void *, size_t);
+char map_set_(map_base_t *, const char *, void *, size_t);
+
 void map_remove_(map_base_t *, const char *);
+
 map_iter_t map_iter_(void);
+
 const char *map_next_(map_base_t *, map_iter_t *);
 
 

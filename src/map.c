@@ -5,9 +5,10 @@
  * under the terms of the MIT license. See LICENSE for details.
  */
 
-#include <stdlib.h> // malloc, realloc
-#include <string.h> // memcpy, strlen, strcmp
+#include <stdlib.h> /* malloc, realloc*/
+#include <string.h> /* memcpy, strlen, strcmp*/
 #include "map.h"
+
 
 struct map_node_t {
     size_t hash;
@@ -15,7 +16,7 @@ struct map_node_t {
     map_node_t *next;
 };
 
-
+/*djb2 hashing algorithm*/
 static size_t map_hash(const char *str) {
     size_t hash = 5381;
     while (*str) {
@@ -27,16 +28,18 @@ static size_t map_hash(const char *str) {
 
 static map_node_t *map_newnode(const char *key, void *value, size_t vsize) {
     map_node_t *node;
-    size_t ksize = strlen(key) + 1;
-    size_t voffset = ksize + ((sizeof(void *) - ksize) % sizeof(void *));
-    node = (map_node_t *) malloc(sizeof(*node) + voffset + vsize);
+    size_t ksize = strlen(key) + 1; /* +1 for \0 */
+    node = (map_node_t *) malloc(sizeof(*node) + ksize + vsize);
     if (node == NULL) {
         return NULL;
     }
-    memcpy(node + 1, key, ksize);
-    node->hash = map_hash(key);
-    node->value = ((char *) (node + 1)) + voffset;
-    memcpy(node->value, value, vsize);
+    memcpy(node + 1, key, ksize); /*node + 1 goes past the pointer to node object, where key pointer is aligned*/
+    node->hash = map_hash(key); /*we're storing hash too in order to simplify search*/
+
+    /*goes past the node pointer memory, casts it to bytes and goes forward for keysize in bytes in order to use value memory - our pointer where ->value will be pointing to.*/
+    node->value = ((char *) (node + 1)) + ksize;
+
+    memcpy(node->value, value, vsize); /*assigning value of size valuesize to memory where ->value is pointing to*/
     return node;
 }
 
@@ -55,7 +58,7 @@ static void map_addnode(map_base_t *m, map_node_t *node) {
 }
 
 
-static short map_resize(map_base_t *m, size_t nbuckets) {
+static char map_resize(map_base_t *m, size_t nbuckets) {
     map_node_t *nodes, *node, *next;
     map_node_t **buckets;
     size_t i;
@@ -72,7 +75,7 @@ static short map_resize(map_base_t *m, size_t nbuckets) {
         }
     }
     /* Reset buckets */
-    buckets = (map_node_t **)realloc(m->buckets, sizeof(*m->buckets) * nbuckets);
+    buckets = (map_node_t **) realloc(m->buckets, sizeof(*m->buckets) * nbuckets);
     if (buckets != NULL) {
         m->buckets = buckets;
         m->nbuckets = nbuckets;
@@ -88,7 +91,7 @@ static short map_resize(map_base_t *m, size_t nbuckets) {
         }
     }
     /* Return error code if realloc() failed */
-    return (buckets == NULL) ? -1 : 0;
+    return (buckets == NULL) ? 0 : 1;
 }
 
 
@@ -97,7 +100,7 @@ static map_node_t **map_getref(map_base_t *m, const char *key) {
     map_node_t **next;
     if (m->nbuckets > 0) {
         next = &m->buckets[map_bucketidx(m, hash)];
-        while (*next) {
+        while (*next != NULL) {
             if ((*next)->hash == hash && !strcmp((char *) (*next + 1), key)) {
                 return next;
             }
@@ -130,36 +133,38 @@ void *map_get_(map_base_t *m, const char *key) {
 }
 
 
-short map_set_(map_base_t *m, const char *key, void *value, size_t vsize) {
-    short err;
+char map_set_(map_base_t *m, const char *key, void *value, size_t vsize) {
     size_t n;
     map_node_t **next, *node;
     /* Find & replace existing node */
     next = map_getref(m, key);
-    if (next) {
+    if (next != NULL) {
+
         memcpy((*next)->value, value, vsize);
-        return 0;
+        return 1;
     }
+
     /* Add new node */
     node = map_newnode(key, value, vsize);
     if (node == NULL) {
         goto fail;
     }
     if (m->nnodes >= m->nbuckets) {
-        n = (m->nbuckets > 0) ? (m->nbuckets << 1) : 1;
-        err = map_resize(m, n);
-        if (err) {
+
+        n = (m->nbuckets > 0) ? (m->nbuckets * 2) : 1;
+
+        if (!map_resize(m, n)) {
             goto fail;
         }
     }
     map_addnode(m, node);
     m->nnodes++;
-    return 0;
+    return 1;
     fail:
     if (node) {
         free(node);
     }
-    return -1;
+    return 0;
 }
 
 
@@ -184,7 +189,7 @@ map_iter_t map_iter_(void) {
 
 
 const char *map_next_(map_base_t *m, map_iter_t *iter) {
-    if (iter->node) {
+    if (iter->node != NULL) {
         iter->node = iter->node->next;
         if (iter->node == NULL) {
             goto nextBucket;

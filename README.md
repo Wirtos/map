@@ -80,8 +80,8 @@ Returns a pointer to the value of the given `key`. If no mapping for the `key`
 exists then `NULL` will be returned.
 
 ### map\_set(m, key, value)
-Sets the given `key` to the given `value`. Returns `0` on success, otherwise
-`-1` is returned and the map remains unchanged.
+Sets the given `key` to the given `value`. Returns `1` on success, otherwise
+`0` is returned and the map remains unchanged.
 
 ### map\_remove(m, key)
 Removes the mapping of the given `key` from the map. If the `key` does not
@@ -109,12 +109,10 @@ while ((key = map_next(&m, &iter))) {
 `map_remove` on current node key will cause freed memory access bug when values are iterated
 ```c
 const char *key;
-map_iter_t get_iter = map_iter(&m);
+map_iter_t iter = map_iter(&m);
 
-while ((key = map_next(&m, &get_iter))) {
-    map_remove(&m, key);
-    size_t ret = *map_get(&m, key); // access violation error on bound check enabled debuggers(MSVC), freed memory is accessed
-    printf("key: \"%s\" got, value: %zu\n", key, ret);
+while ((key = map_next(&m, &iter))) {
+  map_remove(&m, key); // access violation error on bound check enabled debuggers(MSVC), freed memory is accessed, key ptr is no longer valid
 }
 ```
 
