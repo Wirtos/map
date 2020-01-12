@@ -6,7 +6,7 @@ int main(void) {
     map_t(size_t) map; /* define custom map with size_t value type*/
     map_init(&map);
     printf("MAP INIT\n");
-    char *keys[] = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
+    char *keys[] = {"k0", "k1", "k2", "k3", "k4", "k5", "k6", "k7", "k8", "k9"};
 
     for (size_t i = 0; i < 10; i++) {
         if (!map_set(&map, keys[i], i + 1)) { /* Handle setter error*/
@@ -21,7 +21,7 @@ int main(void) {
             printf("Failed map_get on key %zu\n", i);
             goto fail;
         }
-        printf("%s -> %zu\n", keys[i], *val);
+        printf("'%s' -> %zu\n", keys[i], *val);
     }
     printf("\nIterate key by key:\n"); /* Notice the fact that keys aren't sorted*/
     const char *iter_key;
@@ -29,7 +29,7 @@ int main(void) {
     map_iter_t get_iter = map_iter(&map);
     while ((iter_key = map_next(&map, &get_iter))) {
         size_t ret = *map_get(&map, iter_key);
-        printf("%s -> %zu\n", iter_key, ret);
+        printf("'%s' -> %zu\n", iter_key, ret);
 
     }
 
