@@ -10,17 +10,11 @@
 #include "map.h"
 
 
-struct map_node_t {
-    size_t hash;
-    void *value;
-    map_node_t *next;
-};
-
 /*djb2 hashing algorithm*/
 static size_t map_hash(const char *str) {
     size_t hash = 5381;
     while (*str) {
-        hash = ((hash << 5) + hash) ^ *str++;
+        hash = ((hash * 32) + hash) ^ *((unsigned char *) str++);
     }
     return hash;
 }
@@ -33,13 +27,14 @@ static map_node_t *map_newnode(const char *key, void *value, size_t vsize) {
     if (node == NULL) {
         return NULL;
     }
-    memcpy(node + 1, key, ksize); /*node + 1 goes past the pointer to node object, where key pointer is aligned*/
-    node->hash = map_hash(key); /*we're storing hash too in order to simplify search*/
+    memcpy(node + 1, key, ksize); /* Node + 1 goes past the pointer to node object, where key pointer is aligned*/
+    node->hash = map_hash(key); /* We're storing hash too in order to simplify search*/
+    node->next = NULL;
 
-    /*goes past the node pointer memory, casts it to bytes and goes forward for keysize in bytes in order to use value memory - our pointer where ->value will be pointing to.*/
+    /* Goes past the node pointer memory, casts it to bytes and goes forward for keysize in bytes in order to use value memory - our pointer where ->value will be pointing to.*/
     node->value = ((char *) (node + 1)) + ksize;
 
-    memcpy(node->value, value, vsize); /*assigning value of size valuesize to memory where ->value is pointing to*/
+    memcpy(node->value, value, vsize); /* Assigning value of size valuesize to memory where ->value is pointing to*/
     return node;
 }
 
@@ -67,7 +62,7 @@ static char map_resize(map_base_t *m, size_t nbuckets) {
     i = m->nbuckets;
     while (i--) {
         node = (m->buckets)[i];
-        while (node) {
+        while (node != NULL) {
             next = node->next;
             node->next = nodes;
             nodes = node;
@@ -79,8 +74,6 @@ static char map_resize(map_base_t *m, size_t nbuckets) {
     if (buckets != NULL) {
         m->buckets = buckets;
         m->nbuckets = nbuckets;
-    }
-    if (m->buckets) {
         memset(m->buckets, 0, sizeof(*m->buckets) * m->nbuckets);
         /* Re-add nodes to buckets */
         node = nodes;
@@ -101,7 +94,7 @@ static map_node_t **map_getref(map_base_t *m, const char *key) {
     if (m->nbuckets > 0) {
         next = &m->buckets[map_bucketidx(m, hash)];
         while (*next != NULL) {
-            if ((*next)->hash == hash && !strcmp((char *) (*next + 1), key)) {
+            if ((*next)->hash == hash && strcmp((char *) (*next + 1), key) == 0) {
                 return next;
             }
             next = &(*next)->next;
@@ -117,7 +110,7 @@ void map_delete_(map_base_t *m) {
     i = m->nbuckets;
     while (i--) {
         node = m->buckets[i];
-        while (node) {
+        while (node != NULL) {
             next = node->next;
             free(node);
             node = next;
@@ -129,7 +122,7 @@ void map_delete_(map_base_t *m) {
 
 void *map_get_(map_base_t *m, const char *key) {
     map_node_t **next = map_getref(m, key);
-    return next ? (*next)->value : NULL;
+    return next != NULL ? (*next)->value : NULL;
 }
 
 
@@ -139,20 +132,16 @@ char map_set_(map_base_t *m, const char *key, void *value, size_t vsize) {
     /* Find & replace existing node */
     next = map_getref(m, key);
     if (next != NULL) {
-
         memcpy((*next)->value, value, vsize);
         return 1;
     }
-
     /* Add new node */
     node = map_newnode(key, value, vsize);
     if (node == NULL) {
         goto fail;
     }
     if (m->nnodes >= m->nbuckets) {
-
         n = (m->nbuckets > 0) ? (m->nbuckets * 2) : 1;
-
         if (!map_resize(m, n)) {
             goto fail;
         }
@@ -161,7 +150,7 @@ char map_set_(map_base_t *m, const char *key, void *value, size_t vsize) {
     m->nnodes++;
     return 1;
     fail:
-    if (node) {
+    if (node != NULL) {
         free(node);
     }
     return 0;
@@ -171,7 +160,7 @@ char map_set_(map_base_t *m, const char *key, void *value, size_t vsize) {
 void map_remove_(map_base_t *m, const char *key) {
     map_node_t *node;
     map_node_t **next = map_getref(m, key);
-    if (next) {
+    if (next != NULL) {
         node = *next;
         *next = (*next)->next;
         free(node);

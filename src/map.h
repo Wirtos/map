@@ -10,10 +10,16 @@
 
 #include <string.h> /* memset*/
 
-#define MAP_VERSION "0.1.1"
+#define MAP_VERSION "0.1.2"
 
-struct map_node_t;
+
 typedef struct map_node_t map_node_t;
+
+struct map_node_t {
+    size_t hash;
+    void *value;
+    map_node_t *next;
+};
 
 typedef struct {
     map_node_t **buckets;
@@ -72,8 +78,8 @@ map_iter_t map_iter_(void);
 const char *map_next_(map_base_t *, map_iter_t *);
 
 
-typedef map_t(void*) map_void_t;
-typedef map_t(char*) map_str_t;
+typedef map_t(void *) map_void_t;
+typedef map_t(char *) map_str_t;
 typedef map_t(int) map_int_t;
 typedef map_t(char) map_char_t;
 typedef map_t(float) map_float_t;
