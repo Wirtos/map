@@ -12,9 +12,10 @@
 
 /*djb2 hashing algorithm*/
 static size_t map_hash(const char *str) {
+    /*5381 and 32 - efficient magic numbers*/
     size_t hash = 5381;
     while (*str) {
-        hash = ((hash * 32) + hash) ^ *((unsigned char *) str++);
+        hash = ((hash * 33) + hash) ^ ((unsigned char) *str++);
     }
     return hash;
 }
@@ -77,7 +78,7 @@ static char map_resize(map_base_t *m, size_t nbuckets) {
         memset(m->buckets, 0, sizeof(*m->buckets) * m->nbuckets);
         /* Re-add nodes to buckets */
         node = nodes;
-        while (node) {
+        while (node != NULL) {
             next = node->next;
             map_addnode(m, node);
             node = next;
