@@ -8,7 +8,7 @@
 #ifndef CMAP_H
 #define CMAP_H
 
-#include <string.h> /* memset*/
+#include <string.h> /* memset */
 
 #define MAP_VER_MAJOR 1
 #define MAP_VER_MINOR 0
