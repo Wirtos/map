@@ -1,6 +1,7 @@
-#include "src/map.h" /* map_**/
-#include <stdio.h> /* printf*/
-#include <stdlib.h> /* malloc, EXIT_**/
+#include <assert.h>
+#include <cmap.h>   /* map_* */
+#include <stdio.h>  /* printf */
+#include <stdlib.h> /* EXIT_* */
 
 int main(void) {
     unsigned i;
@@ -25,6 +26,7 @@ int main(void) {
             printf("'%s' -> %u\n", keys[i], *val);
         }
     }
+    map_remove(&map, keys[0]);
     {
         char *iter_key;
         map_iter_t get_iter = map_iter(&map);

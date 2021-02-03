@@ -7,7 +7,7 @@
 
 #include <stdlib.h> /* malloc, realloc*/
 #include <string.h> /* memcpy, strlen, strcmp*/
-#include "map.h"
+#include "cmap.h"
 
 struct map_node_t {
     size_t hash;
@@ -47,20 +47,34 @@ int map_string_cmp(const void *a, const void *b, size_t ksize) {
     return strcmp(*(const char **) a, *(const char **) b);
 }
 
+static void map_freenode(map_node_t *node){
+    free(node->key);
+    free(node->value);
+    free(node);
+}
+
 static map_node_t *map_newnode(const void *key, size_t ksize, const void *value, size_t vsize, MapHashFunction hash_func) {
     map_node_t *node;
     node = (map_node_t *) malloc(sizeof(*node));
     if (node == NULL) {
         return NULL;
     }
+    node->key = NULL;
+    node->value = NULL;
+
     node->key = malloc(ksize);
+    if (node->key == NULL) goto fail;
     memcpy(node->key, key, ksize);
     node->hash = hash_func(key, ksize); /* Call map-specific hash function */
     node->next = NULL;
 
     node->value = malloc(vsize);
+    if (node->value == NULL) goto fail;
     memcpy(node->value, value, vsize);
     return node;
+fail:
+    map_freenode(node);
+    return NULL;
 }
 
 
@@ -137,9 +151,7 @@ void map_delete_(map_base_t *m) {
         node = m->buckets[i];
         while (node != NULL) {
             next = node->next;
-            free(node->key);
-            free(node->value);
-            free(node);
+            map_freenode(node);
             node = next;
         }
     }
@@ -178,7 +190,7 @@ char map_set_(map_base_t *m, const void *key, size_t ksize, const void *value, s
     return 1;
     fail:
     if (node != NULL) {
-        free(node);
+        map_freenode(node);
     }
     return 0;
 }
@@ -190,7 +202,7 @@ void map_remove_(map_base_t *m, const void *key, size_t ksize) {
     if (next != NULL) {
         node = *next;
         *next = (*next)->next;
-        free(node);
+        map_freenode(node);
         m->nnodes--;
     }
 }

@@ -5,14 +5,14 @@
  * under the terms of the MIT license. See LICENSE for details.
  */
 
-#ifndef MAP_H
-#define MAP_H
+#ifndef CMAP_H
+#define CMAP_H
 
 #include <string.h> /* memset*/
 
 #define MAP_VER_MAJOR 1
 #define MAP_VER_MINOR 0
-#define MAP_VER_PATCH 0
+#define MAP_VER_PATCH 1
 
 typedef size_t (*MapHashFunction)(const void *key, size_t memsize);
 typedef int (*MapCmpFunction)(const void *a, const void *b, size_t ksize);
@@ -53,10 +53,9 @@ typedef struct {
   ((m)->tmpval = (value), (m)->tmpkey = (key),\
     map_set_(&(m)->base, &(m)->tmpkey, sizeof((m)->tmpkey), &(m)->tmpval, sizeof((m)->tmpval)))
 
-
-#define map_remove(m, key)\
-  map_remove_(&(m)->base, key)
-
+#define map_remove(m, key) \
+    ((m)->tmpkey = (key),  \
+     map_remove_(&(m)->base, &(m)->tmpkey, sizeof((m)->tmpkey)))
 
 #define map_iter(m) \
   map_iter_()
@@ -96,4 +95,4 @@ typedef map_t(char) map_char_t;
 typedef map_t(float) map_float_t;
 typedef map_t(double) map_double_t;*/
 
-#endif
+#endif /* CMAP_H */

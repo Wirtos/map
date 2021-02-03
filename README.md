@@ -2,8 +2,9 @@
 A type-safe generic hashmap implementation for C.
 
 ## Installation 
-The [map.c](src/map.c?raw=1) and [map.h](src/map.h?raw=1) files can be dropped
+The [map.c](src/cmap.c?raw=1) and [map.h](src/cmap.h?raw=1) files can be dropped
 into an existing C project and compiled along with it.
+You can also git clone it and add_subdirectory() from cmake project, then link to cmap library.
 
 
 ## Usage
