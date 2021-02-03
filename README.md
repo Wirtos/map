@@ -70,9 +70,12 @@ If you use complex types like structs or unions, you should provide own compatib
 `_string_` functions should be used if char * as a key type is a null-terminated string.
 
 ### typedef size_t (*MapHashFunction)(const void *key, size_t memsize);
+Where memsize is sizeof(KT)
 
 ### typedef int (*MapCmpFunction)(const void *a, const void *b, size_t ksize);
 Should return 0 if both objects pointed to by a and b are equal, otherwise >0 if a > b and <0 if b > a.
+Where ksize is sizeof(KT), but can be ignored if the actual size is known 
+(for example when key type is an array or a nul-terminated string).
 
 ### map\_delete(m)
 Deinitialises the map, freeing the memory the map allocated during use;
