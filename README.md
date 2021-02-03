@@ -4,7 +4,7 @@ A type-safe generic hashmap implementation for C.
 ## Installation 
 The [map.c](src/cmap.c?raw=1) and [map.h](src/cmap.h?raw=1) files can be dropped
 into an existing C project and compiled along with it.
-You can also git clone it and add_subdirectory() from cmake project, then link to cmap library.
+You can also git clone it and `add_subdirectory()` from CMake project, then link to cmap library/target.
 
 
 ## Usage
@@ -59,24 +59,29 @@ typedef map_t(void *, FILE*) ptr_fp_map_t;
 
 ### map\_init(m, key_cmp_func, key_hash_func)
 Initialises the map, this must be called before the map can be used. 
-There's two four default sets of functions you can use:
+There's two default sets of functions you can use:
   - map_string_cmp 
   - map_string_hash
 ---
   - map_generic_cmp
   - map_generic_hash
 
-`_generic_` functions can be used with any basic key types like int, float, long double, etc.
-If you use complex types like structs or unions, you should provide own compatible functions. \
-`_string_` functions should be used if char * as a key type is a null-terminated string.
+`map_generic_*` functions can be used with any basic key types like _any_ pointers, int, float, long double, time_t etc. 
+- *(!) If you use complex types like structs or unions (not their pointers, but their objects), 
+  you should provide own compatible functions 
+that compare/hash struct or union members one-by one, complex types with identical members might yield 
+  non-equal result in generic byte-by-byte fast comparison due to the padding bytes containing random data! 
+  The same goes for hashing!* See [this](https://stackoverflow.com/a/141791) stackoverflow question.
+  
+`map_string_*` functions should be used if char * as a key type is a null-terminated string.
 
 ### typedef size_t (*MapHashFunction)(const void *key, size_t memsize);
-Where memsize is sizeof(KT)
+Where memsize is sizeof(KT). In case of comparing structs see the link above.
 
 ### typedef int (*MapCmpFunction)(const void *a, const void *b, size_t ksize);
 Should return 0 if both objects pointed to by a and b are equal, otherwise >0 if a > b and <0 if b > a.
 Where ksize is sizeof(KT), but can be ignored if the actual size is known 
-(for example when key type is an array or a nul-terminated string).
+(for example when key type is a static array or a nul-terminated string).
 
 ### map\_delete(m)
 Deinitialises the map, freeing the memory the map allocated during use;
