@@ -59,9 +59,10 @@ typedef map_t(void *, FILE*) ptr_fp_map_t;
 
 ### map\_init(m, key_cmp_func, key_hash_func)
 Initialises the map, this must be called before the map can be used. 
-There's two four default functions you can use:
+There's two four default sets of functions you can use:
   - map_string_cmp 
   - map_string_hash
+---
   - map_generic_cmp
   - map_generic_hash
 
