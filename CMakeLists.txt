@@ -7,4 +7,6 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE MinSizeRel)
 endif()
 
-add_executable(cmap main.c src/map.c src/map.h)
+add_executable(cmap_example main.c src/map.c src/map.h)
+add_library(cmap src/map.c)
+target_include_directories(cmap PUBLIC src)
