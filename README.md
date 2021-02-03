@@ -104,9 +104,9 @@ Returns a `map_iter_t` which can be used with `map_next()` to iterate all the
 keys in the map.
 
 
-### map\_next(m, iter, obj_ptr)
-Uses the `map_iter_t` returned by `map_iter()` to iterate all the keys in the
-map. `map_next()` returns a key with each call and returns `NULL` when there
+### map\_next(m, iter, key_ptr)
+Uses the `map_iter_t` context returned by `map_iter()` to iterate all the keys in the
+map. `map_next()` sets a key with each call and returns 0 when there
 are no more keys.
 ```c
 int key;
@@ -117,13 +117,13 @@ while (map_next(&m, &iter, &key)) {
 }
 ```
 
-## Known bugs(implementation disadvantages)
-`map_remove` on current node key will cause freed memory access bug when values are iterated
+## Known bugs (implementation disadvantages)
+`map_remove` on current node key will cause freed memory access bug when values are iterated:
 ```c
 const char *key;
 map_iter_t iter = map_iter(&m);
 
-while ((key = map_next(&m, &iter))) {
+while (map_next(&m, &iter, &key)) {
   map_remove(&m, key); // access violation error on bound check enabled debuggers(MSVC), freed memory is accessed, key ptr is no longer valid
 }
 ```
