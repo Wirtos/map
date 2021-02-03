@@ -1,4 +1,3 @@
-#include <assert.h>
 #include <cmap.h>   /* map_* */
 #include <stdio.h>  /* printf */
 #include <stdlib.h> /* EXIT_* */
