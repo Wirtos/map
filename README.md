@@ -11,8 +11,8 @@ You can also git clone it and add_subdirectory() from cmake project, then link t
 Before using a map it should first be initialised using the `map_init()`
 function.
 ```c
-map_int_t m;
-map_init(&m);
+map_t(key_type, value_type) m;
+map_init(&m, map_generic_cmp, map_generic_hash);
 ```
 
 Values can added to a map using the `map_set()` function.
@@ -39,40 +39,42 @@ it. This will free any memory the map allocated during use.
 map_delete(&m);
 ```
 
-## Types
-map.h provides the following predefined map types:
-
-Contained Type  | Type name
-----------------|----------------------------------
-void*           | map_void_t
-char*           | map_str_t
-int             | map_int_t
-char            | map_char_t
-float           | map_float_t
-double          | map_double_t
-
 To define a new map type the `map_t()` macro should be used:
 ```c
 /* Creates the type uint_map_t for storing unsigned ints */
-typedef map_t(unsigned int) uint_map_t;
+typedef map_t(signed char, unsigned int) uint_map_t;
 ```
 
 ## Functions
 All map functions are macro functions. The parameter `m` in each function
 should be a pointer to the map struct which the operation is to be performed
-on. The `key` parameter should always be a string value.
+on. The `key` parameter should always be a first type passed to map_t.
 
-### map\_t(T)
-Creates a map struct for containing values of type `T`.
+### map\_t(KT, VT)
+Creates a map struct for containing keys of type `KT` and values of type `VT`.
 ```c
-/* Typedefs the struct `fp_map_t` as a container for type FILE* */
-typedef map_t(FILE*) fp_map_t;
+/* Typedefs the struct `ptr_fp_map_t` as a container for type FILE* */
+typedef map_t(void *, FILE*) ptr_fp_map_t;
 ```
 
-### map\_init(m)
+### map\_init(m, key_cmp_func, key_hash_func)
 Initialises the map, this must be called before the map can be used. 
+There's two four default functions you can use:
+  - map_string_cmp 
+  - map_string_hash
+  - map_generic_cmp
+  - map_generic_hash
 
-### map\_deinit(m)
+`_generic_` functions can be used with any basic key types like int, float, long double, etc.
+If you use complex types like structs or unions, you should provide own compatible functions. \
+`_string_` functions should be used if char * as a key type is a null-terminated string.
+
+### typedef size_t (*MapHashFunction)(const void *key, size_t memsize);
+
+### typedef int (*MapCmpFunction)(const void *a, const void *b, size_t ksize);
+Should return 0 if both objects pointed to by a and b are equal, otherwise >0 if a > b and <0 if b > a.
+
+### map\_delete(m)
 Deinitialises the map, freeing the memory the map allocated during use;
 this should be called when we're finished with a map.
 
@@ -93,16 +95,16 @@ Returns a `map_iter_t` which can be used with `map_next()` to iterate all the
 keys in the map.
 
 
-### map\_next(m, iter)
+### map\_next(m, iter, obj_ptr)
 Uses the `map_iter_t` returned by `map_iter()` to iterate all the keys in the
 map. `map_next()` returns a key with each call and returns `NULL` when there
 are no more keys.
 ```c
-const char *key;
+int key;
 map_iter_t iter = map_iter(&m);
 
-while ((key = map_next(&m, &iter))) {
-  printf("%s -> %d", key, *map_get(&m, key));
+while (map_next(&m, &iter, &key)) {
+  printf("%d -> %d", key, *map_get(&m, key));
 }
 ```
 
