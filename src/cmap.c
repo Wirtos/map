@@ -210,7 +210,7 @@ void map_remove_(map_base_t *m, const void *key, size_t ksize) {
 
 map_iter_t map_iter_(void) {
     map_iter_t iter;
-    iter.bucketidx = -1;
+    iter.bucketidx = (size_t)-1;
     iter.node = NULL;
     return iter;
 }
@@ -242,7 +242,7 @@ int map_equal_(map_base_t *m1, map_base_t *m2, size_t ksize, size_t vsize, MapCm
         return 0;
     }
     if (!val_cmp_func) val_cmp_func = map_generic_cmp;
-    while ((m1_key = map_next_(m1, &m1_it))){
+    while ((m1_key = map_next_(m1, &m1_it)) != 0){
         void *m2_val_ptr = map_get_(m2, m1_key, ksize);
         if (m2_val_ptr == NULL || val_cmp_func(map_get_(m1, m1_key, ksize), m2_val_ptr, vsize) != 0){
             return 0;

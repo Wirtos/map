@@ -39,8 +39,8 @@ typedef struct {
 #define map_init(m, key_cmp_func, key_hash_func)\
   memset(m, 0, sizeof(*m)), \
         (m)->base.buckets = NULL, \
-        (m)->base.cmp_func = key_cmp_func ? key_cmp_func : map_generic_cmp, \
-        (m)->base.hash_func = key_hash_func ? key_hash_func : map_generic_hash
+        (m)->base.cmp_func = (key_cmp_func != NULL) ? key_cmp_func : map_generic_cmp, \
+        (m)->base.hash_func = (key_hash_func != NULL) ? key_hash_func : map_generic_hash
 
 
 #define map_delete(m)\
