@@ -17,10 +17,10 @@
 typedef size_t (*MapHashFunction)(const void *key, size_t memsize);
 typedef int (*MapCmpFunction)(const void *a, const void *b, size_t memsize);
 
-typedef struct map_node_t map_node_t;
+struct map_node_t;
 
 typedef struct {
-    map_node_t **buckets;
+    struct map_node_t **buckets;
     size_t nbuckets, nnodes;
     MapHashFunction hash_func;
     MapCmpFunction cmp_func;
@@ -28,7 +28,7 @@ typedef struct {
 
 typedef struct {
     size_t bucketidx;
-    map_node_t *node;
+    struct map_node_t *node;
 } map_iter_t;
 
 #define map_t(KT, VT)    \

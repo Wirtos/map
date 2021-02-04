@@ -9,6 +9,8 @@
 #include <string.h> /* memcpy, strlen, strcmp */
 #include "cmap.h"
 
+typedef struct map_node_t map_node_t;
+
 struct map_node_t {
     size_t hash;
     void *key;
