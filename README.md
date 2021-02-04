@@ -12,7 +12,7 @@ Before using a map it should first be initialised using the `map_init()`
 function.
 ```c
 map_t(key_type, value_type) m;
-map_init(&m, map_generic_cmp, map_generic_hash);
+map_init(&m, NULL, NULL);
 ```
 
 Values can added to a map using the `map_set()` function.
@@ -66,6 +66,8 @@ There's two default sets of functions you can use:
   - map_generic_cmp
   - map_generic_hash
 
+If `NULL` was passed as either of `key_*_func` then its generic version will be used by default.
+
 `map_generic_*` functions can be used with any basic key types like _any_ pointers, int, float, long double, time_t etc. 
 - *(!) If you use complex types like structs or unions (not their pointers, but their objects), 
   you should provide own compatible functions 
@@ -78,7 +80,7 @@ that compare/hash struct or union members one-by one, complex types with identic
 ### typedef size_t (*MapHashFunction)(const void *key, size_t memsize);
 Where memsize is sizeof(KT). In case of comparing structs see the link above.
 
-### typedef int (*MapCmpFunction)(const void *a, const void *b, size_t ksize);
+### typedef int (*MapCmpFunction)(const void *a, const void *b, size_t memsize);
 Should return 0 if both objects pointed to by a and b are equal, otherwise >0 if a > b and <0 if b > a.
 Where ksize is sizeof(KT), but can be ignored if the actual size is known 
 (for example when key type is a static array or a nul-terminated string).
@@ -117,6 +119,24 @@ while (map_next(&m, &iter, &key)) {
 }
 ```
 
+### map\_cmp(m1, m2, val_cmp_func)
+Compares if both maps of the same type are equal - same keys, same values.
+If `val_cmp_func` is `NULL`, then `map_generic_cmp` will be used to compare values.
+```c
+map_t(char, char) m1, m2;
+map_init(&m1, NULL, NULL);
+map_init(&m2, NULL, NULL);
+map_set(&m1, 'a', 'a');
+map_set(&m2, 'a', 'a');
+assert(map_equal(&m1, &m2, NULL));
+
+map_t(int, char) m3;
+map_init(&m3, NULL, NULL);
+
+/* (!) Different types */
+/* Compiler should give you a warning or an error about this comparison */
+map_equal(&m1, &m3, NULL); 
+```
 ## Known bugs (implementation disadvantages)
 `map_remove` on current node key will cause freed memory access bug when values are iterated:
 ```c
