@@ -1,4 +1,4 @@
-/**
+/*************************************************************************
  * Copyright (c) 2020 Wirtos
  *
  * This library is free software; you can redistribute it and/or modify it
@@ -11,11 +11,11 @@
 #include <string.h> /* memset */
 
 #define MAP_VER_MAJOR 1
-#define MAP_VER_MINOR 0
-#define MAP_VER_PATCH 1
+#define MAP_VER_MINOR 1
+#define MAP_VER_PATCH 0
 
 typedef size_t (*MapHashFunction)(const void *key, size_t memsize);
-typedef int (*MapCmpFunction)(const void *a, const void *b, size_t ksize);
+typedef int (*MapCmpFunction)(const void *a, const void *b, size_t memsize);
 
 typedef struct map_node_t map_node_t;
 
@@ -33,11 +33,14 @@ typedef struct {
 
 
 #define map_t(KT, VT)\
-  struct { map_base_t base; KT tmpkey; KT *keyref; VT tmpval; VT *ref;}
+  struct { map_base_t base; KT tmpkey; KT *keyref; VT tmpval; VT *valref;}
 
 
-#define map_init(m, cmpfunc, hashfunc)\
-  memset(m, 0, sizeof(*m)), (m)->base.buckets = NULL, (m)->base.cmp_func = cmpfunc, (m)->base.hash_func = hashfunc
+#define map_init(m, key_cmp_func, key_hash_func)\
+  memset(m, 0, sizeof(*m)), \
+        (m)->base.buckets = NULL, \
+        (m)->base.cmp_func = key_cmp_func ? key_cmp_func : map_generic_cmp, \
+        (m)->base.hash_func = key_hash_func ? key_hash_func : map_generic_hash
 
 
 #define map_delete(m)\
@@ -46,7 +49,7 @@ typedef struct {
 
 #define map_get(m, key) \
   ((m)->tmpkey = key,                      \
-  (m)->ref = map_get_(&(m)->base, &(m)->tmpkey, sizeof((m)->tmpkey)))
+  (m)->valref = map_get_(&(m)->base, &(m)->tmpkey, sizeof((m)->tmpkey)))
 
 
 #define map_set(m, key, value)\
@@ -65,6 +68,12 @@ typedef struct {
      ((m)->keyref)                              \
          ? ((*kptr = *(m)->keyref), 1)          \
          : 0)
+
+#define map_equal(m1, m2, val_cmp_func)               \
+    ((1) ? &(m1)->tmpkey : &(m2)->tmpkey, \
+     (1) ? &(m1)->tmpval : &(m2)->tmpval, \
+     map_equal_(&(m1)->base, &(m2)->base, sizeof((m2)->tmpkey), sizeof((m2)->tmpval), (val_cmp_func)))
+
 
 size_t map_generic_hash(const void *mem, size_t bsize);
 
@@ -87,6 +96,7 @@ map_iter_t map_iter_(void);
 
 void *map_next_(map_base_t *, map_iter_t *);
 
+int map_equal_(map_base_t *m1, map_base_t *m2, size_t ksize, size_t vsize, MapCmpFunction val_cmp_func);
 
 /*typedef map_t(void *) map_void_t;
 typedef map_t(char *) map_str_t;

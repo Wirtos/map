@@ -1,12 +1,12 @@
-/** 
+/*************************************************************************
  * Copyright (c) 2020 Wirtos
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the MIT license. See LICENSE for details.
  */
 
-#include <stdlib.h> /* malloc, realloc*/
-#include <string.h> /* memcpy, strlen, strcmp*/
+#include <stdlib.h> /* malloc, realloc */
+#include <string.h> /* memcpy, strlen, strcmp */
 #include "cmap.h"
 
 struct map_node_t {
@@ -18,7 +18,7 @@ struct map_node_t {
 
 /* djb2 hashing algorithm */
 size_t map_generic_hash(const void *mem, size_t bsize) {
-    /*5381 and 32 - efficient magic numbers*/
+    /* 5381 and 32 - efficient magic numbers */
     const unsigned char *barr = mem;
     size_t hash = 5381;
     size_t i;
@@ -232,4 +232,21 @@ void *map_next_(map_base_t *m, map_iter_t *iter) {
         } while (iter->node == NULL);
     }
     return iter->node->key;
+}
+
+
+int map_equal_(map_base_t *m1, map_base_t *m2, size_t ksize, size_t vsize, MapCmpFunction val_cmp_func) {
+    void *m1_key;
+    map_iter_t m1_it = map_iter(m1);
+    if (m1->nnodes != m2->nnodes){
+        return 0;
+    }
+    if (!val_cmp_func) val_cmp_func = map_generic_cmp;
+    while ((m1_key = map_next_(m1, &m1_it))){
+        void *m2_val_ptr = map_get_(m2, m1_key, ksize);
+        if (m2_val_ptr == NULL || val_cmp_func(map_get_(m1, m1_key, ksize), m2_val_ptr, vsize) != 0){
+            return 0;
+        }
+    }
+    return 1;
 }
