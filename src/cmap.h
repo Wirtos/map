@@ -31,57 +31,57 @@ typedef struct {
     map_node_t *node;
 } map_iter_t;
 
+#define map_t(KT, VT)    \
+    struct {             \
+        map_base_t base; \
+        KT tmpkey;       \
+        KT *keyref;      \
+        VT tmpval;       \
+        VT *valref;      \
+    }
 
-#define map_t(KT, VT)\
-  struct { map_base_t base; KT tmpkey; KT *keyref; VT tmpval; VT *valref;}
-
-
-#define map_init(m, key_cmp_func, key_hash_func)\
-  memset(m, 0, sizeof(*m)), \
-        (m)->base.buckets = NULL, \
+#define map_init(m, key_cmp_func, key_hash_func)                                      \
+    memset(m, 0, sizeof(*m)),                                                         \
+        (m)->base.buckets = NULL,                                                     \
         (m)->base.cmp_func = (key_cmp_func != NULL) ? key_cmp_func : map_generic_cmp, \
         (m)->base.hash_func = (key_hash_func != NULL) ? key_hash_func : map_generic_hash
-
 
 #define map_delete(m)\
   map_delete_(&(m)->base)
 
-
 #define map_get(m, key) \
-  ((m)->tmpkey = key,                      \
-  (m)->valref = map_get_(&(m)->base, &(m)->tmpkey, sizeof((m)->tmpkey)))
+    ((m)->tmpkey = key, \
+     (m)->valref = map_get_(&(m)->base, &(m)->tmpkey, sizeof((m)->tmpkey)))
 
-
-#define map_set(m, key, value)\
-  ((m)->tmpval = (value), (m)->tmpkey = (key),\
-    map_set_(&(m)->base, &(m)->tmpkey, sizeof((m)->tmpkey), &(m)->tmpval, sizeof((m)->tmpval)))
+#define map_set(m, key, value)                   \
+    ((m)->tmpval = (value), (m)->tmpkey = (key), \
+     map_set_(&(m)->base, &(m)->tmpkey, sizeof((m)->tmpkey), &(m)->tmpval, sizeof((m)->tmpval)))
 
 #define map_remove(m, key) \
     ((m)->tmpkey = (key),  \
      map_remove_(&(m)->base, &(m)->tmpkey, sizeof((m)->tmpkey)))
 
 #define map_iter(m) \
-  map_iter_()
+    map_iter_()
 
 #define map_next(m, iter, kptr)                 \
     ((m)->keyref = map_next_(&(m)->base, iter), \
      ((m)->keyref)                              \
-         ? ((*kptr = *(m)->keyref), 1)          \
+         ? (*kptr = *(m)->keyref), 1            \
          : 0)
 
-#define map_equal(m1, m2, val_cmp_func)               \
-    (((void)((1) ? &(m1)->tmpkey : &(m2)->tmpkey)), \
-     ((void)((1) ? &(m1)->tmpval : &(m2)->tmpval)), \
+#define map_equal(m1, m2, val_cmp_func)              \
+    (((void) ((1) ? &(m1)->tmpkey : &(m2)->tmpkey)), \
+     ((void) ((1) ? &(m1)->tmpval : &(m2)->tmpval)), \
      map_equal_(&(m1)->base, &(m2)->base, sizeof((m2)->tmpkey), sizeof((m2)->tmpval), (val_cmp_func)))
 
+size_t map_generic_hash(const void *mem, size_t memsize);
 
-size_t map_generic_hash(const void *mem, size_t bsize);
+size_t map_string_hash(const void *mem, size_t memsize);
 
-size_t map_string_hash(const void *mem, size_t bsize);
+int map_generic_cmp(const void *a, const void *b, size_t memsize);
 
-int map_generic_cmp(const void *a, const void *b, size_t ksize);
-
-int map_string_cmp(const void *a, const void *b, size_t ksize);
+int map_string_cmp(const void *a, const void *b, size_t memsize);
 
 
 void map_delete_(map_base_t *);

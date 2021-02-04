@@ -17,33 +17,33 @@ struct map_node_t {
 };
 
 /* djb2 hashing algorithm */
-size_t map_generic_hash(const void *mem, size_t bsize) {
+size_t map_generic_hash(const void *mem, size_t memsize) {
     /* 5381 and 32 - efficient magic numbers */
     const unsigned char *barr = mem;
     size_t hash = 5381;
     size_t i;
-    for (i = 0; i < bsize; i++) {
+    for (i = 0; i < memsize; i++) {
         hash = ((hash * 33) + hash) ^ (barr[i]);
     }
     return hash;
 }
 
-size_t map_string_hash(const void *mem, size_t bsize) {
+size_t map_string_hash(const void *mem, size_t memsize) {
     const unsigned char *barr = mem;
     size_t hash = 5381;
-    (void) bsize;
+    (void) memsize;
     while (*barr){
         hash = ((hash * 33) + hash) ^ (*barr++);
     }
     return hash;
 }
 
-int map_generic_cmp(const void *a, const void *b, size_t ksize) {
-    return memcmp(a, b, ksize);
+int map_generic_cmp(const void *a, const void *b, size_t memsize) {
+    return memcmp(a, b, memsize);
 }
 
-int map_string_cmp(const void *a, const void *b, size_t ksize) {
-    (void) ksize;
+int map_string_cmp(const void *a, const void *b, size_t memsize) {
+    (void) memsize;
     return strcmp(*(const char **) a, *(const char **) b);
 }
 
