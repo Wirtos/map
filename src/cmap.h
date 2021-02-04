@@ -70,8 +70,8 @@ typedef struct {
          : 0)
 
 #define map_equal(m1, m2, val_cmp_func)               \
-    ((1) ? &(m1)->tmpkey : &(m2)->tmpkey, \
-     (1) ? &(m1)->tmpval : &(m2)->tmpval, \
+    (((void)((1) ? &(m1)->tmpkey : &(m2)->tmpkey)), \
+     ((void)((1) ? &(m1)->tmpval : &(m2)->tmpval)), \
      map_equal_(&(m1)->base, &(m2)->base, sizeof((m2)->tmpkey), sizeof((m2)->tmpval), (val_cmp_func)))
 
 
