@@ -34,10 +34,10 @@ typedef struct {
 #define map_t(KT, VT)    \
     struct {             \
         map_base_t base; \
-        KT tmpkey;       \
         KT *keyref;      \
-        VT tmpval;       \
         VT *valref;      \
+        VT tmpval;       \
+        KT tmpkey;       \
     }
 
 #define map_init(m, key_cmp_func, key_hash_func)                                      \
