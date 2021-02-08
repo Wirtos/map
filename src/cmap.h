@@ -11,8 +11,8 @@
 #include <string.h> /* memset */
 
 #define MAP_VER_MAJOR 2
-#define MAP_VER_MINOR 0
-#define MAP_VER_PATCH 1
+#define MAP_VER_MINOR 1
+#define MAP_VER_PATCH 0
 
 typedef size_t (*MapHashFunction)(const void *key, size_t memsize);
 typedef int (*MapCmpFunction)(const void *a, const void *b, size_t memsize);
@@ -102,10 +102,12 @@ typedef struct {
              map_sametype_(&(m)->tmpkey, &(pairs)->k),                                 \
              map_sametype_(&(m)->tmpval, &(pairs)->v),                                 \
              map_from_pairs_(&(m)->base,                                               \
-                             &(pairs)->k, (count),                                     \
+                             (count),                                                  \
                              sizeof(*pairs),                                           \
+                             &(pairs)->k,                                              \
                              sizeof((m)->tmpkey),                                      \
                              map_boffset_(&(m)->tmpkey, &(m)->offset_sample),          \
+                             &(pairs)->v,                                              \
                              sizeof((m)->tmpval),                                      \
                              map_boffset_(&(m)->tmpval, &(m)->offset_sample) )         \
            )                                                                           \
@@ -136,7 +138,7 @@ void *map_next_(map_base_t *, map_iter_t *);
 
 int map_equal_(map_base_t *, map_base_t *, size_t, size_t, MapCmpFunction);
 
-int map_from_pairs_(map_base_t *, const void *, size_t, size_t, size_t, size_t, size_t, size_t);
+int map_from_pairs_(map_base_t *, size_t, size_t, const void *, size_t, size_t, const void *, size_t, size_t);
 
 #define map_boffset_(a, b) ((const char *)(a) - (const char *)(b))
 

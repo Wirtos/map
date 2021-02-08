@@ -242,15 +242,16 @@ int map_equal_(map_base_t *m1, map_base_t *m2, size_t ksize, size_t vsize, MapCm
     return 1;
 }
 
-
-int map_from_pairs_(map_base_t *m, const void *pairs, size_t pcount, size_t psize, size_t ksize, size_t koffset, size_t vsize, size_t voffset) {
+int map_from_pairs_(map_base_t *m, size_t pcount, size_t psize,
+                    const void *key, size_t ksize, size_t koffset,
+                    const void *val, size_t vsize, size_t voffset) {
     size_t i;
-    const void *key = pairs;
-    for (i = 0; i < pcount; ++i) {
-        if (!map_set_(m, key, ksize, koffset, (const char *)key + (voffset - koffset), vsize, voffset)){
+    for (i = 0; i < pcount; i++) {
+        if (!map_set_(m, key, ksize, koffset, val, vsize, voffset)){
             return 0;
         }
         key = (char *)key + psize;
+        val = (char *)val + psize;
     }
     return 1;
 }
