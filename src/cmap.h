@@ -12,7 +12,7 @@
 
 #define MAP_VER_MAJOR 2
 #define MAP_VER_MINOR 0
-#define MAP_VER_PATCH 0
+#define MAP_VER_PATCH 1
 
 typedef size_t (*MapHashFunction)(const void *key, size_t memsize);
 typedef int (*MapCmpFunction)(const void *a, const void *b, size_t memsize);
@@ -102,12 +102,12 @@ typedef struct {
              map_sametype_(&(m)->tmpkey, &(pairs)->k),                                 \
              map_sametype_(&(m)->tmpval, &(pairs)->v),                                 \
              map_from_pairs_(&(m)->base,                                               \
-                             (pairs), (count),                                         \
+                             &(pairs)->k, (count),                                     \
                              sizeof(*pairs),                                           \
                              sizeof((m)->tmpkey),                                      \
                              map_boffset_(&(m)->tmpkey, &(m)->offset_sample),          \
                              sizeof((m)->tmpval),                                      \
-                             map_boffset_(&(m)->tmpkey, &(m)->offset_sample) )         \
+                             map_boffset_(&(m)->tmpval, &(m)->offset_sample) )         \
            )                                                                           \
          : 1                                                                           \
     )
