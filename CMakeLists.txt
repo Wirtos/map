@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(cmap LANGUAGES C VERSION 1.2.1)
+project(cmap LANGUAGES C VERSION 2.0.0)
 
 set(CMAKE_C_STANDARD 90)
 set(CMAKE_C_STANDARD_REQUIRED ON)

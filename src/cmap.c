@@ -50,33 +50,22 @@ int map_string_cmp(const void *a, const void *b, size_t memsize) {
 }
 
 static void map_freenode(map_node_t *node){
-    free(node->key);
-    free(node->value);
     free(node);
 }
 
-static map_node_t *map_newnode(const void *key, size_t ksize, const void *value, size_t vsize, MapHashFunction hash_func) {
+static map_node_t *map_newnode(const void *key, size_t ksize, size_t koffset, const void *value, size_t vsize, size_t voffset, MapHashFunction hash_func) {
     map_node_t *node;
-    node = (map_node_t *) malloc(sizeof(*node));
+    node = (map_node_t *) malloc(sizeof(*node) + koffset + ksize + voffset + vsize);
     if (node == NULL) {
         return NULL;
     }
-    node->key = NULL;
-    node->value = NULL;
-
-    node->key = malloc(ksize);
-    if (node->key == NULL) goto fail;
+    node->key = (char *)(node + 1) + koffset;
+    node->value = (char *)(node + 1) + voffset;
     memcpy(node->key, key, ksize);
+    memcpy(node->value, value, vsize);
     node->hash = hash_func(key, ksize); /* Call map-specific hash function */
     node->next = NULL;
-
-    node->value = malloc(vsize);
-    if (node->value == NULL) goto fail;
-    memcpy(node->value, value, vsize);
     return node;
-fail:
-    map_freenode(node);
-    return NULL;
 }
 
 
@@ -167,7 +156,7 @@ void *map_get_(map_base_t *m, const void *key, size_t ksize) {
 }
 
 
-int map_set_(map_base_t *m, const void *key, size_t ksize, const void *value, size_t vsize) {
+int map_set_(map_base_t *m, const void *key, size_t ksize, size_t koffset, const void *value, size_t vsize, size_t voffset) {
     size_t n;
     map_node_t **next, *node;
     /* Find & replace existing node */
@@ -177,7 +166,7 @@ int map_set_(map_base_t *m, const void *key, size_t ksize, const void *value, si
         return 1;
     }
     /* Add new node */
-    node = map_newnode(key, ksize, value, vsize, m->hash_func);
+    node = map_newnode(key, ksize, koffset, value, vsize, voffset, m->hash_func);
     if (node == NULL) {
         goto fail;
     }
@@ -254,11 +243,11 @@ int map_equal_(map_base_t *m1, map_base_t *m2, size_t ksize, size_t vsize, MapCm
 }
 
 
-int map_from_pairs_(map_base_t *m, const void *pairs, size_t pcount, size_t psize, size_t ksize, size_t vsize, size_t voffset) {
+int map_from_pairs_(map_base_t *m, const void *pairs, size_t pcount, size_t psize, size_t ksize, size_t koffset, size_t vsize, size_t voffset) {
     size_t i;
     const void *key = pairs;
     for (i = 0; i < pcount; ++i) {
-        if (!map_set_(m, key, ksize, (const char *)key + voffset, vsize)){
+        if (!map_set_(m, key, ksize, koffset, (const char *)key + (voffset - koffset), vsize, voffset)){
             return 0;
         }
         key = (char *)key + psize;
