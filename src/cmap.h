@@ -46,11 +46,13 @@ typedef struct {
         KT tmpkey;       \
     }
 
-#define map_init(m, key_cmp_func, key_hash_func)                                      \
-    memset(m, 0, sizeof(*m)),                                                         \
-        (m)->base.buckets = NULL,                                                     \
-        (m)->base.cmp_func = (key_cmp_func != NULL) ? key_cmp_func : map_generic_cmp, \
-        (m)->base.hash_func = (key_hash_func != NULL) ? key_hash_func : map_generic_hash
+#define map_init(m, key_cmp_func, key_hash_func)                                        \
+    (                                                                                   \
+        ((void) memset(m, 0, sizeof(*m))),                                              \
+        (m)->base.buckets = NULL,                                                       \
+        (m)->base.cmp_func = (key_cmp_func != NULL) ? key_cmp_func : map_generic_cmp,   \
+        (m)->base.hash_func = (key_hash_func != NULL) ? key_hash_func : map_generic_hash\
+    )
 
 #define map_delete(m)\
   map_delete_(&(m)->base)
@@ -59,9 +61,13 @@ typedef struct {
     ((m)->tmpkey = key, \
      (m)->valref = map_get_(&(m)->base, &(m)->tmpkey, sizeof((m)->tmpkey)))
 
-#define map_set(m, key, value)                   \
-    ((m)->tmpval = (value), (m)->tmpkey = (key), \
-     map_set_(&(m)->base, &(m)->tmpkey, sizeof((m)->tmpkey), &(m)->tmpval, sizeof((m)->tmpval)))
+#define map_set(m, key, value)                       \
+    (                                                \
+        (m)->tmpval = (value), (m)->tmpkey = (key),  \
+        map_set_(&(m)->base,                         \
+                  &(m)->tmpkey, sizeof((m)->tmpkey), \
+                  &(m)->tmpval, sizeof((m)->tmpval)) \
+    )
 
 #define map_remove(m, key) \
     ((m)->tmpkey = (key),  \
@@ -73,26 +79,33 @@ typedef struct {
 #define map_next(m, iter, kptr)                 \
     ((m)->keyref = map_next_(&(m)->base, iter), \
      ((m)->keyref)                              \
-         ? (*kptr = *(m)->keyref), 1            \
-         : 0)
+         ? ((*kptr = *(m)->keyref), 1)          \
+         : 0                                    \
+    )
 
 #define map_equal(m1, m2, val_cmp_func)              \
-    (((void) ((1) ? &(m1)->tmpkey : &(m2)->tmpkey)), \
+    (                                                \
+     ((void) ((1) ? &(m1)->tmpkey : &(m2)->tmpkey)), \
      ((void) ((1) ? &(m1)->tmpval : &(m2)->tmpval)), \
-     map_equal_(&(m1)->base, &(m2)->base, sizeof((m2)->tmpkey), sizeof((m2)->tmpval), (val_cmp_func)))
+     map_equal_(&(m1)->base, &(m2)->base,            \
+        sizeof((m2)->tmpkey), sizeof((m2)->tmpval),  \
+        (val_cmp_func))                              \
+    )
 
 #define map_from_pairs(m, pairs, count)                                                \
-    (((count) > 0)                                                                     \
+    (                                                                                  \
+        ((count) > 0)                                                                  \
          ? (                                                                           \
              ((void) ((1) ? &(m)->tmpkey : &(pairs)->k)),                              \
              ((void) ((1) ? &(m)->tmpval : &(pairs)->v)),                              \
              map_from_pairs_(&(m)->base,                                               \
                              (pairs), (count),                                         \
                              sizeof(*pairs), sizeof((m)->tmpkey), sizeof((m)->tmpval), \
-                             (((const char *) &pairs->v - (const char *) pairs)))      \
+                             ((const char *) &(pairs)->v - (const char *) (pairs)))    \
            )                                                                           \
          : 1                                                                           \
     )
+
 size_t map_generic_hash(const void *mem, size_t memsize);
 
 size_t map_string_hash(const void *mem, size_t memsize);
@@ -102,6 +115,7 @@ int map_generic_cmp(const void *a, const void *b, size_t memsize);
 int map_string_cmp(const void *a, const void *b, size_t memsize);
 
 
+/* "private" functions */
 void map_delete_(map_base_t *);
 
 void *map_get_(map_base_t *, const void *, size_t);
