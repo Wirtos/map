@@ -94,7 +94,7 @@ static void map_addnode(map_base_t *m, map_node_t *node) {
 }
 
 
-static char map_resize(map_base_t *m, size_t nbuckets) {
+static int map_resize(map_base_t *m, size_t nbuckets) {
     map_node_t *nodes, *node, *next;
     map_node_t **buckets;
     size_t i;
@@ -167,7 +167,7 @@ void *map_get_(map_base_t *m, const void *key, size_t ksize) {
 }
 
 
-char map_set_(map_base_t *m, const void *key, size_t ksize, const void *value, size_t vsize) {
+int map_set_(map_base_t *m, const void *key, size_t ksize, const void *value, size_t vsize) {
     size_t n;
     map_node_t **next, *node;
     /* Find & replace existing node */
@@ -249,6 +249,19 @@ int map_equal_(map_base_t *m1, map_base_t *m2, size_t ksize, size_t vsize, MapCm
         if (m2_val_ptr == NULL || val_cmp_func(map_get_(m1, m1_key, ksize), m2_val_ptr, vsize) != 0){
             return 0;
         }
+    }
+    return 1;
+}
+
+
+int map_from_pairs_(map_base_t *m, const void *pairs, size_t pcount, size_t psize, size_t ksize, size_t vsize, size_t voffset) {
+    size_t i;
+    const void *key = pairs;
+    for (i = 0; i < pcount; ++i) {
+        if (!map_set_(m, key, ksize, (const char *)key + voffset, vsize)){
+            return 0;
+        }
+        key = (char *)key + psize;
     }
     return 1;
 }

@@ -11,8 +11,8 @@
 #include <string.h> /* memset */
 
 #define MAP_VER_MAJOR 1
-#define MAP_VER_MINOR 1
-#define MAP_VER_PATCH 0
+#define MAP_VER_MINOR 2
+#define MAP_VER_PATCH 1
 
 typedef size_t (*MapHashFunction)(const void *key, size_t memsize);
 typedef int (*MapCmpFunction)(const void *a, const void *b, size_t memsize);
@@ -30,6 +30,12 @@ typedef struct {
     size_t bucketidx;
     struct map_node_t *node;
 } map_iter_t;
+
+#define map_pair_t(KT, VT) \
+    struct {               \
+        KT k;              \
+        VT v;              \
+    }
 
 #define map_t(KT, VT)    \
     struct {             \
@@ -75,6 +81,18 @@ typedef struct {
      ((void) ((1) ? &(m1)->tmpval : &(m2)->tmpval)), \
      map_equal_(&(m1)->base, &(m2)->base, sizeof((m2)->tmpkey), sizeof((m2)->tmpval), (val_cmp_func)))
 
+#define map_from_pairs(m, pairs, count)                                                \
+    (((count) > 0)                                                                     \
+         ? (                                                                           \
+             ((void) ((1) ? &(m)->tmpkey : &(pairs)->k)),                              \
+             ((void) ((1) ? &(m)->tmpval : &(pairs)->v)),                              \
+             map_from_pairs_(&(m)->base,                                               \
+                             (pairs), (count),                                         \
+                             sizeof(*pairs), sizeof((m)->tmpkey), sizeof((m)->tmpval), \
+                             (((const char *) &pairs->v - (const char *) pairs)))      \
+           )                                                                           \
+         : 1                                                                           \
+    )
 size_t map_generic_hash(const void *mem, size_t memsize);
 
 size_t map_string_hash(const void *mem, size_t memsize);
@@ -88,7 +106,7 @@ void map_delete_(map_base_t *);
 
 void *map_get_(map_base_t *, const void *, size_t);
 
-char map_set_(map_base_t *, const void *, size_t, const void *, size_t);
+int map_set_(map_base_t *, const void *, size_t, const void *, size_t);
 
 void map_remove_(map_base_t *, const void *, size_t);
 
@@ -96,7 +114,10 @@ map_iter_t map_iter_(void);
 
 void *map_next_(map_base_t *, map_iter_t *);
 
-int map_equal_(map_base_t *m1, map_base_t *m2, size_t ksize, size_t vsize, MapCmpFunction val_cmp_func);
+int map_equal_(map_base_t *, map_base_t *, size_t, size_t, MapCmpFunction);
+
+int map_from_pairs_(map_base_t *, const void *, size_t, size_t, size_t, size_t, size_t);
+
 
 /*typedef map_t(void *) map_void_t;
 typedef map_t(char *) map_str_t;
