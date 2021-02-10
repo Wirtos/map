@@ -57,6 +57,9 @@ Creates a map struct for containing keys of type `KT` and values of type `VT`.
 typedef map_t(void *, FILE*) ptr_fp_map_t;
 ```
 
+### map\_stdinit(m)
+A shortcut for map_init(m, NULL, NULL).
+
 ### map\_init(m, key_cmp_func, key_hash_func)
 Initialises the map, this must be called before the map can be used. 
 There's two default sets of functions you can use:

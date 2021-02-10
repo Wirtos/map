@@ -11,7 +11,7 @@
 #include <string.h> /* memset */
 
 #define MAP_VER_MAJOR 2
-#define MAP_VER_MINOR 1
+#define MAP_VER_MINOR 2
 #define MAP_VER_PATCH 0
 
 typedef size_t (*MapHashFunction)(const void *key, size_t memsize);
@@ -54,6 +54,8 @@ typedef struct {
         (m)->base.cmp_func = (key_cmp_func != NULL) ? key_cmp_func : map_generic_cmp,   \
         (m)->base.hash_func = (key_hash_func != NULL) ? key_hash_func : map_generic_hash\
     )
+
+#define map_stdinit(m) map_init(m, NULL, NULL)
 
 #define map_delete(m)\
   map_delete_(&(m)->base)
