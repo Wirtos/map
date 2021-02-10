@@ -2,7 +2,7 @@
 A type-safe generic hashmap implementation for C.
 
 ## Installation 
-The [map.c](src/cmap.c?raw=1) and [map.h](src/cmap.h?raw=1) files can be dropped
+The [cmap.c](src/cmap.c?raw=1) and [cmap.h](src/cmap.h?raw=1) files can be dropped
 into an existing C project and compiled along with it.
 You can also git clone it and `add_subdirectory()` from CMake project, then link to cmap library/target.
 
@@ -137,7 +137,7 @@ map_init(&m3, NULL, NULL);
 /* Compiler should give you a warning or an error about this comparison */
 map_equal(&m1, &m3, NULL); 
 ```
-## Known bugs (implementation disadvantages)
+## Known limitations
 `map_remove` on current node key will cause freed memory access bug when values are iterated:
 ```c
 const char *key;
