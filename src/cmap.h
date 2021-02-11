@@ -8,11 +8,11 @@
 #ifndef CMAP_H
 #define CMAP_H
 
-#include <string.h> /* memset */
+#include <string.h> /* memset, size_t */
 
 #define MAP_VER_MAJOR 2
 #define MAP_VER_MINOR 2
-#define MAP_VER_PATCH 0
+#define MAP_VER_PATCH 2
 
 typedef size_t (*MapHashFunction)(const void *key, size_t memsize);
 typedef int (*MapCmpFunction)(const void *a, const void *b, size_t memsize);
@@ -20,10 +20,10 @@ typedef int (*MapCmpFunction)(const void *a, const void *b, size_t memsize);
 struct map_node_t;
 
 typedef struct {
-    struct map_node_t **buckets;
     MapHashFunction hash_func;
     MapCmpFunction cmp_func;
     size_t nbuckets, nnodes;
+    struct map_node_t **buckets;
 } map_base_t;
 
 typedef struct {
@@ -40,7 +40,6 @@ typedef struct {
 #define map_t(KT, VT)                     \
     struct {                              \
         map_base_t base;                  \
-        struct map_node_t *offset_sample; \
         KT tmpkey;                        \
         VT tmpval;                        \
         KT *keyref;                       \
@@ -69,9 +68,9 @@ typedef struct {
         (m)->tmpval = (value), (m)->tmpkey = (key),                \
         map_set_(&(m)->base,                                       \
                   &(m)->tmpkey, sizeof((m)->tmpkey),               \
-                  map_boffset_(&(m)->tmpkey, &(m)->offset_sample), \
+                  map_boffset_(&(m)->tmpkey, &(m)->base.buckets), \
                   &(m)->tmpval, sizeof((m)->tmpval),               \
-                  map_boffset_(&(m)->tmpval, &(m)->offset_sample)) \
+                  map_boffset_(&(m)->tmpval, &(m)->base.buckets)) \
     )
 
 #define map_remove(m, key) \
@@ -108,10 +107,10 @@ typedef struct {
                              sizeof(*pairs),                                           \
                              &(pairs)->k,                                              \
                              sizeof((m)->tmpkey),                                      \
-                             map_boffset_(&(m)->tmpkey, &(m)->offset_sample),          \
+                             map_boffset_(&(m)->tmpkey, &(m)->base.buckets),           \
                              &(pairs)->v,                                              \
                              sizeof((m)->tmpval),                                      \
-                             map_boffset_(&(m)->tmpval, &(m)->offset_sample) )         \
+                             map_boffset_(&(m)->tmpval, &(m)->base.buckets) )          \
            )                                                                           \
          : 1                                                                           \
     )

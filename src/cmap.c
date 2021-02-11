@@ -20,7 +20,7 @@ struct map_node_t {
 
 /* djb2 hashing algorithm */
 size_t map_generic_hash(const void *mem, size_t memsize) {
-    /* 5381 and 32 - efficient magic numbers */
+    /* 5381 and 33 - efficient magic numbers */
     const unsigned char *barr = mem;
     size_t hash = 5381;
     size_t i;
@@ -47,10 +47,6 @@ int map_generic_cmp(const void *a, const void *b, size_t memsize) {
 int map_string_cmp(const void *a, const void *b, size_t memsize) {
     (void) memsize;
     return strcmp(*(const char **) a, *(const char **) b);
-}
-
-static void map_freenode(map_node_t *node){
-    free(node);
 }
 
 static map_node_t *map_newnode(const void *key, size_t ksize, size_t koffset, const void *value, size_t vsize, size_t voffset, MapHashFunction hash_func) {
@@ -142,7 +138,7 @@ void map_delete_(map_base_t *m) {
         node = m->buckets[i];
         while (node != NULL) {
             next = node->next;
-            map_freenode(node);
+            free(node);
             node = next;
         }
     }
@@ -168,22 +164,18 @@ int map_set_(map_base_t *m, const void *key, size_t ksize, size_t koffset, const
     /* Add new node */
     node = map_newnode(key, ksize, koffset, value, vsize, voffset, m->hash_func);
     if (node == NULL) {
-        goto fail;
+        return 0;
     }
     if (m->nnodes >= m->nbuckets) {
         n = (m->nbuckets > 0) ? (m->nbuckets * 2) : 1;
         if (!map_resize(m, n)) {
-            goto fail;
+            free(node);
+            return 0;
         }
     }
     map_addnode(m, node);
     m->nnodes++;
     return 1;
-    fail:
-    if (node != NULL) {
-        map_freenode(node);
-    }
-    return 0;
 }
 
 
@@ -193,7 +185,7 @@ void map_remove_(map_base_t *m, const void *key, size_t ksize) {
     if (next != NULL) {
         node = *next;
         *next = (*next)->next;
-        map_freenode(node);
+        free(node);
         m->nnodes--;
     }
 }
