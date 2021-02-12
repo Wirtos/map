@@ -31,7 +31,7 @@ size_t map_generic_hash(const void *mem, size_t memsize) {
 }
 
 size_t map_string_hash(const void *mem, size_t memsize) {
-    const unsigned char *barr = mem;
+    const unsigned char *barr = *(void **)mem;
     size_t hash = 5381;
     (void) memsize;
     while (*barr){

@@ -12,7 +12,7 @@
 
 #define MAP_VER_MAJOR 2
 #define MAP_VER_MINOR 2
-#define MAP_VER_PATCH 2
+#define MAP_VER_PATCH 3
 
 typedef size_t (*MapHashFunction)(const void *key, size_t memsize);
 typedef int (*MapCmpFunction)(const void *a, const void *b, size_t memsize);
