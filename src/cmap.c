@@ -6,7 +6,7 @@
  */
 
 #include <stdlib.h> /* malloc, realloc */
-#include <string.h> /* memcpy, strlen, strcmp */
+#include <string.h> /* strcmp, memset, memcmp, memcpy */
 #include "cmap.h"
 
 typedef struct map_node_t map_node_t;
@@ -100,6 +100,7 @@ static int map_resize(map_base_t *m, size_t nbuckets) {
     if (buckets != NULL) {
         m->buckets = buckets;
         m->nbuckets = nbuckets;
+        /* todo: introduce a portable ifdef. NULL's bits aren't always all-zeros */
         memset(m->buckets, 0, sizeof(*m->buckets) * m->nbuckets);
         /* Re-add nodes to buckets */
         node = nodes;

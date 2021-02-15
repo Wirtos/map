@@ -8,11 +8,11 @@
 #ifndef CMAP_H
 #define CMAP_H
 
-#include <string.h> /* memset, size_t */
+#include <stddef.h> /* size_t, NULL */
 
 #define MAP_VER_MAJOR 2
-#define MAP_VER_MINOR 2
-#define MAP_VER_PATCH 3
+#define MAP_VER_MINOR 4
+#define MAP_VER_PATCH 0
 
 typedef size_t (*MapHashFunction)(const void *key, size_t memsize);
 typedef int (*MapCmpFunction)(const void *a, const void *b, size_t memsize);
@@ -47,8 +47,9 @@ typedef struct {
     }
 
 #define map_init(m, key_cmp_func, key_hash_func)                                        \
-    (                                                                                   \
-        ((void) memset(m, 0, sizeof(*m))),                                              \
+    (void)(                                                                             \
+        (m)->base.nbuckets = 0,                                                         \
+        (m)->base.nnodes = 0,                                                           \
         (m)->base.buckets = NULL,                                                       \
         (m)->base.cmp_func = (key_cmp_func != NULL) ? key_cmp_func : map_generic_cmp,   \
         (m)->base.hash_func = (key_hash_func != NULL) ? key_hash_func : map_generic_hash\
@@ -57,7 +58,7 @@ typedef struct {
 #define map_stdinit(m) map_init(m, NULL, NULL)
 
 #define map_delete(m)\
-  map_delete_(&(m)->base)
+  (map_delete_(&(m)->base), map_init(m, (m)->base.cmp_func, (m)->base.hash_func))
 
 #define map_get(m, key) \
     ((m)->tmpkey = key, \
@@ -96,7 +97,7 @@ typedef struct {
         (val_cmp_func) )                             \
     )
 
-#define map_from_pairs(m, pairs, count)                                                \
+#define map_from_pairs(m, count, pairs)                                                \
     (                                                                                  \
         ((count) > 0)                                                                  \
          ? (                                                                           \
