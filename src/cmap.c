@@ -248,3 +248,21 @@ int map_from_pairs_(map_base_t *m, size_t pcount, size_t psize,
     }
     return 1;
 }
+int map_copy_(map_base_t *m1, map_base_t *m2, size_t ksize, size_t koffset, size_t vsize, size_t voffset) {
+    map_node_t *next, *node;
+    size_t i;
+    if (m2->nbuckets > (m1->nbuckets - m1->nnodes) && !map_resize(m1, m2->nbuckets)) return 0;
+
+    i = m2->nbuckets;
+    while (i--) {
+        node = m2->buckets[i];
+        while (node != NULL) {
+            next = node->next;
+            if (!map_set_(m1, node->key, ksize, koffset, node->value, vsize, voffset)){
+                return 0;
+            }
+            node = next;
+        }
+    }
+    return 1;
+}

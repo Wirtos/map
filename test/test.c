@@ -116,17 +116,14 @@ int main() {
         test_assert(key_seen);
         test_assert(c == mp->base.nnodes);
     }
-    test_section("map_equal") {
+    test_section("map_copy|map_equal") {
         map_lf_i copymap, *cpmp = &copymap;
-        map_iter_t it = map_iter(mp);
-        double k;
         map_stdinit(cpmp);
-        while (map_next(mp, &it, &k)) {
-            map_set(cpmp, k, *map_get(mp, k));
-        }
+        test_assert(map_copy(cpmp, mp));
         test_assert(map_equal(mp, cpmp, map_generic_cmp));
-        map_remove(mp, k);
+        map_remove(mp, 3);
         test_assert(!map_equal(mp, cpmp, map_generic_cmp));
+        test_assert(mp->base.nbuckets == cpmp->base.nbuckets);
         map_delete(cpmp);
     }
 
