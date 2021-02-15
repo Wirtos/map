@@ -5,7 +5,6 @@ foreach(vspec IN ITEMS MAJOR MINOR PATCH)
     string(SUBSTRING "${vspec}" 22 -1 vspec)
     list(APPEND CMAP_VER ${vspec})
 endforeach()
-unset(vspec)
 string(JOIN "." CMAP_VER ${CMAP_VER})
 
 project(cmap LANGUAGES C VERSION ${CMAP_VER})
