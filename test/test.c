@@ -1,5 +1,6 @@
 #include <cmap.h>
 #include <stdio.h>
+#include <string.h>
 
 #define test_section(desc)        \
     {                             \
@@ -114,6 +115,19 @@ int main() {
         }
         test_assert(key_seen);
         test_assert(c == mp->base.nnodes);
+    }
+    test_section("map_equal") {
+        map_lf_i copymap, *cpmp = &copymap;
+        map_iter_t it = map_iter(mp);
+        double k;
+        map_stdinit(cpmp);
+        while (map_next(mp, &it, &k)) {
+            map_set(cpmp, k, *map_get(mp, k));
+        }
+        test_assert(map_equal(mp, cpmp, map_generic_cmp));
+        map_remove(mp, k);
+        test_assert(!map_equal(mp, cpmp, map_generic_cmp));
+        map_delete(cpmp);
     }
 
     map_delete(mp);
