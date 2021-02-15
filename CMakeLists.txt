@@ -10,3 +10,6 @@ target_include_directories(cmap PUBLIC src)
 
 add_executable(cmap_example EXCLUDE_FROM_ALL main.c)
 target_link_libraries(cmap_example PRIVATE cmap)
+
+add_executable(cmap_test EXCLUDE_FROM_ALL test/test.c)
+target_link_libraries(cmap_test PRIVATE cmap)
