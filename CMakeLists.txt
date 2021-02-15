@@ -1,5 +1,14 @@
 cmake_minimum_required(VERSION 3.10)
-project(cmap LANGUAGES C VERSION 2.5.0)
+
+foreach(vspec IN ITEMS MAJOR MINOR PATCH)
+    file(STRINGS src/cmap.h vspec REGEX "#define MAP_VER_${vspec} ([0-9]+)")
+    string(SUBSTRING "${vspec}" 22 -1 vspec)
+    list(APPEND CMAP_VER ${vspec})
+endforeach()
+unset(vspec)
+string(JOIN "." CMAP_VER ${CMAP_VER})
+
+project(cmap LANGUAGES C VERSION ${CMAP_VER})
 
 set(CMAKE_C_STANDARD 90)
 set(CMAKE_C_STANDARD_REQUIRED ON)
