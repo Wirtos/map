@@ -117,9 +117,11 @@ int main() {
         test_assert(c == mp->base.nnodes);
     }
     test_section("map_copy|map_equal") {
-        map_lf_i copymap, *cpmp = &copymap;
+        map_lf_i copymap, emptymap, *cpmp = &copymap, *emap = &emptymap;
         map_stdinit(cpmp);
+        map_stdinit(emap);
         test_assert(map_copy(cpmp, mp));
+        test_assert(map_copy(cpmp, emap));
         test_assert(map_equal(mp, cpmp, map_generic_cmp));
         map_remove(mp, 3);
         test_assert(!map_equal(mp, cpmp, map_generic_cmp));
