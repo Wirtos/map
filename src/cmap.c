@@ -25,7 +25,7 @@ size_t map_generic_hash(const void *mem, size_t memsize) {
     size_t hash = 5381;
     size_t i;
     for (i = 0; i < memsize; i++) {
-        hash = ((hash * 33) + hash) ^ (barr[i]);
+        hash = ((hash << 5) + hash) ^ (barr[i]);
     }
     return hash;
 }
@@ -35,7 +35,7 @@ size_t map_string_hash(const void *mem, size_t memsize) {
     size_t hash = 5381;
     (void) memsize;
     while (*barr){
-        hash = ((hash * 33) + hash) ^ (*barr++);
+        hash = ((hash << 5) + hash) ^ (*barr++);
     }
     return hash;
 }
